@@ -10,6 +10,10 @@ class IdentifyTenant
 {
     public function handle(Request $request, Closure $next)
     {
+
+        if ($request->is('api/health')) {
+            return $next($request);
+        }
         $orgId = $request->header('X-Organization-ID');
 
         if (!$orgId) {
