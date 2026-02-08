@@ -11,9 +11,14 @@ class IdentifyTenant
     public function handle(Request $request, Closure $next)
     {
 
-        if ($request->is('api/health')) {
+        // Skip tenant check for health and auth routes
+        if (
+            $request->is('api/health') ||
+            $request->is('api/v1/auth/*')
+        ) {
             return $next($request);
         }
+
         $orgId = $request->header('X-Organization-ID');
 
         if (!$orgId) {

@@ -8,6 +8,8 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use App\Http\Middleware\IdentifyTenant;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use App\Models\User;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 // use Throwable;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -27,6 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Permission middleware alias
         $middleware->alias([
             'permission' => \App\Http\Middleware\CheckPermission::class,
+        ]);
+
+        $middleware->api(prepend: [
+            EnsureFrontendRequestsAreStateful::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
