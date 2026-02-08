@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\TaskController;
+use App\Http\Controllers\Api\V1\OrganizationController;
+use App\Http\Controllers\Api\V1\InvitationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,12 +55,30 @@ Route::prefix('v1')->group(function () {
         | Project Routes (Require manage_projects permission)
         |--------------------------------------------------------------------------
         */
-        Route::middleware(['permission:manage_projects'])->group(function () {
-            Route::get('projects', [ProjectController::class, 'index']);
-            Route::post('projects', [ProjectController::class, 'store']);
-            Route::put('projects/{project}', [ProjectController::class, 'update']);
-            Route::delete('projects/{project}', [ProjectController::class, 'destroy']);
-        });
+        Route::get('projects', [ProjectController::class, 'index']); // Members allowed
+
+        Route::post('projects', [ProjectController::class, 'store'])
+            ->middleware('permission:manage_projects');
+
+        Route::put('projects/{project}', [ProjectController::class, 'update'])
+            ->middleware('permission:manage_projects');
+
+        Route::delete('projects/{project}', [ProjectController::class, 'destroy'])
+            ->middleware('permission:manage_projects');
+
+        Route::post('organizations', [OrganizationController::class, 'store']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Invitation Routes (Require manage_organization permission)
+        |--------------------------------------------------------------------------
+        */
+        //Admin sends invite (needs org + permission)
+        Route::post('invitations', [InvitationController::class, 'store'])
+            ->middleware('permission:manage_users');
+
+        // Invited user accepts invite (no org header required)
+        Route::post('invitations/accept/{token}', [InvitationController::class, 'accept']);
 
         /*
         |--------------------------------------------------------------------------
