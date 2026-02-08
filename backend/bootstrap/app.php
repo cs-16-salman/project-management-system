@@ -18,8 +18,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->appendToGroup('api', IdentifyTenant::class);
-        $middleware->appendToGroup('api', ThrottleRequests::class . ':60,1');
+        // API rate limiting
+        $middleware->appendToGroup('api', \Illuminate\Routing\Middleware\ThrottleRequests::class . ':60,1');
+
+        // Tenant identification
+        $middleware->appendToGroup('api', \App\Http\Middleware\IdentifyTenant::class);
+
+        // Permission middleware alias
+        $middleware->alias([
+            'permission' => \App\Http\Middleware\CheckPermission::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (Throwable $e, Request $request) {
