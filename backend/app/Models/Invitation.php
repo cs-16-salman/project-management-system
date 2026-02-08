@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToOrganization;
+use Illuminate\Support\Str;
+
 
 /**
  * @property int $id
@@ -30,4 +32,31 @@ use App\Traits\BelongsToOrganization;
 class Invitation extends Model
 {
     use BelongsToOrganization;
+
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    protected $fillable = [
+        'id',
+        'email',
+        'role_id',
+        'token',
+        'expires_at'
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->id = (string) Str::uuid();
+            $model->token = Str::random(40);
+            $model->expires_at = now()->addDays(7);
+        });
+    }
+
+    public function organization()
+    {
+        return $this->belongsTo(Organization::class);
+    }
 }

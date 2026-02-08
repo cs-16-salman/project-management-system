@@ -14,7 +14,9 @@ class IdentifyTenant
         // Skip tenant check for health and auth routes
         if (
             $request->is('api/health') ||
-            $request->is('api/v1/auth/*')
+            $request->is('api/v1/auth/*') ||
+            ($request->is('api/v1/organizations') && $request->isMethod('post')) ||
+            $request->is('api/v1/invitations/accept/*')
         ) {
             return $next($request);
         }

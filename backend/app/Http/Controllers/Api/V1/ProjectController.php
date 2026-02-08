@@ -12,10 +12,27 @@ class ProjectController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $perPage = min(request('per_page', 10), 100);
-        $projects = Project::paginate($perPage);
+        $user = $request->user();
+        $org = app('currentOrganization');
+
+        $perPage = min($request->get('per_page', 10), 100);
+
+        // If user can manage projects → show all org projects
+        if ($user->hasPermission('manage_projects')) {
+            $query = Project::where('organization_id', $org->id);
+        } else {
+            // Otherwise show only projects the user belongs to
+            $query = Project::withoutGlobalScopes()
+                ->where('organization_id', $org->id)
+                ->whereHas('users', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
+        }
+
+        $projects = $query->paginate($perPage);
+
         return ApiResponse::paginated($projects, 'Projects fetched successfully');
     }
 
